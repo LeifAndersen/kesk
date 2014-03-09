@@ -3,7 +3,7 @@ module KESK-SYNTAX
   syntax Val ::= Int | Bool
 
   syntax Exp ::= Val
-              |  "(" Exp Exp ")" [strict, left]
+              |  "(" Exp Exp ")" [strict]
               |  Id
               |  "(" "lambda" "(" Id ")" Exp ")" [latex((\lambda\: ({#1})\: {#2}))]
 
@@ -62,6 +62,16 @@ module KESK
        <env> Rho </env>
     [structural]
 
+/*
+  rule <k> (clo(X,E,Rho) V:Val) => E ~> env(Rho') ...</k>
+       <env> Rho' => Rho[X/X] </env>
+       <store>...
+         . => <pair>(X |-> V)</pair>
+       ...</store>
+       //[bucket]
+    when fresh(N:Nat) [bucket]
+*/
+
   rule <k> (clo(X,E,Rho) V:Val) => E ~> env(Rho') ...</k>
        <env> Rho' => Rho[N/X] </env>
        <store>...
@@ -96,12 +106,20 @@ module KESK
   rule (let ([X E]) E') => ((lambda (X) E') E) [macro]
   rule (letrec ([F:Id (lambda (X) E)]) E') => (let ([F (mu (F) (lambda (X) E))]) E') [macro]
 
+/*
+  rule <k> (mu (X) E) => mclo(E,Rho[X/X]) ...</k>
+       <env>Rho</env>
+       <store>...
+         . => <pair>(X |-> mclo(E,Rho[X/X]))</pair>
+       ...</store>
+    when fresh(N:Nat) [mubucket,structural]
+*/
   rule <k> (mu (X) E) => mclo(E,Rho[N/X]) ...</k>
        <env>Rho</env>
        <store>...
          . => <pair>(N |-> mclo(E,Rho[N/X]))</pair>
        ...</store>
-    when fresh(N:Nat) [structural]
+    when fresh(N:Nat) [mubucket,structural]
   rule <k>mclo(E,Rho) => E ~> env(Rho') ...</k>
        <env>Rho' => Rho</env>
 

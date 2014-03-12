@@ -26,6 +26,9 @@ module KESK-SYNTAX
 
   syntax Exp ::= "(" "begin" Exp Exp ")"
               | "(" "begin" Exp ")"
+              | "(" "begin" Exp Exp Exp ")"
+              | "(" "begin" Exp Exp Exp Exp ")"
+              | "(" "begin" Exp Exp Exp Exp Exp ")"
 
   syntax Exp ::=  "(" "set!" Id Exp ")" [strict(2)]
               |   "(" "define" Id Exp ")"
@@ -122,8 +125,11 @@ module KESK
   rule <k> (cc(K,Rho) V) ~> _ => V ~> K </k>
        <env> _ => Rho </env>
 
-  rule (begin E1)    => E1               [structural]
-  rule (begin E1 E2) => E1 ~> (begin E2) [structural]
+  rule (begin E1)             => E1                        [structural]
+  rule (begin E1 E2)          => E1 ~> (begin E2)          [structural]
+  rule (begin E1 E2 E3)       => E1 ~> (begin E2 E3)       [structural]
+  rule (begin E1 E2 E3 E4)    => E1 ~> (begin E2 E3 E4)    [structural]
+  rule (begin E1 E2 E3 E4 E5) => E1 ~> (begin E2 E3 E4 E5) [structural]
 
   rule <k> (set! X:Id V:Val) => . ...</k>
        <env>... X |-> N ...</env>

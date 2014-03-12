@@ -30,8 +30,15 @@ module KESK-SYNTAX
               | "(" "begin" Exp Exp Exp Exp ")"
               | "(" "begin" Exp Exp Exp Exp Exp ")"
 
-  syntax Exp ::=  "(" "set!" Id Exp ")" [strict(2)]
+  syntax Exp ::=  "(" "set!" Id Exp ")"  [strict(2)]
               |   "(" "define" Id Exp ")"
+              |   "(" "quote" Exp ")"
+              |   Pair
+
+  syntax Pair ::= "(" "cons" Exp Exp ")" [strict]
+               |   "'" "(" ")"
+
+  syntax Exp ::= "(" "map" Exp Pair ")"  [strict]
 endmodule
 
 module KESK
@@ -39,6 +46,9 @@ module KESK
 
   syntax Val ::= clo(Id,Exp,Map) [latex(\textsf{closure}((\lambda\: ({#1})\: {#2}), {#3}))]
               |  cc(K,Map)
+              |  quote(Exp)
+              |  pair(Val,Val)
+              |  "null"
 
   syntax Exp ::= mclo(Exp,Map)
 
@@ -117,6 +127,7 @@ module KESK
          . => <pair>(N |-> mclo(E,Rho[N/X]))</pair>
        ...</store>
     when fresh(N:Nat) [mubucket,structural]
+
   rule <k>mclo(E,Rho) => E ~> env(Rho') ...</k>
        <env>Rho' => Rho</env>
 
@@ -136,6 +147,14 @@ module KESK
        <store>...
          <pair> N |-> (_ => V) </pair>
        ...</store>
+
+  rule (cons E1:Val E2:Val) => pair(E1, E2)
+  rule (quote E1)           => quote(E1)
+
+  rule '()                  => null
+
+//  rule (map clo(X,F,E) pair(A,B))   => .
+//  rule (map clo(X,F,E) null)        => .
 
 endmodule
 

@@ -33,22 +33,25 @@ module KESK-SYNTAX
   syntax Exp ::=  "(" "set!" Id Exp ")"  [strict(2)]
               |   "(" "define" Id Exp ")"
               |   "(" "quote" Exp ")"
+              |   "'" Exp
               |   Pair
 
   syntax Pair ::= "(" "cons" Exp Exp ")" [strict]
                |   "'" "(" ")"
 
-  syntax Exp ::= "(" "map" Exp Pair ")"  [strict]
+  syntax Exp ::= "(" "map" Exp Exp ")"  [strict]
 endmodule
 
 module KESK
   imports KESK-SYNTAX
 
-  syntax Val ::= clo(Id,Exp,Map) [latex(\textsf{closure}((\lambda\: ({#1})\: {#2}), {#3}))]
+  syntax Val ::= Clo
               |  cc(K,Map)
               |  quote(Exp)
               |  pair(Val,Val)
               |  "null"
+
+  syntax Clo ::= clo(Id,Exp,Map) [latex(\textsf{closure}((\lambda\: ({#1})\: {#2}), {#3}))]
 
   syntax Exp ::= mclo(Exp,Map)
 
@@ -151,10 +154,12 @@ module KESK
   rule (cons E1:Val E2:Val) => pair(E1, E2)
   rule (quote E1)           => quote(E1)
 
+  rule 'E1                  => quote(E1)
+
   rule '()                  => null
 
-//  rule (map clo(X,F,E) pair(A,B))   => .
-//  rule (map clo(X,F,E) null)        => .
+  rule (map E:Clo pair(A,B))   => (cons (E A) (map E B))
+  rule (map clo(X,E,Rho) null) => null
 
 endmodule
 
